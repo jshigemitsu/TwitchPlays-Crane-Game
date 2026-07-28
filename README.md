@@ -2,7 +2,7 @@
 
 An Arduino-powered retrofit of a toy crane game that can be controlled via messages from a live streaming chat.
 
-![Crane Game](images/crane_game.png)
+![Crane Game](images/crane_game.jpg)
 
 ## Project Goal
 

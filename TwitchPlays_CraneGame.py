@@ -1,15 +1,16 @@
 import concurrent.futures
-import random
 import keyboard
-import pydirectinput
 import pyautogui
 import TwitchPlays_Connection
+import serial
+import time
+import os
 from TwitchPlays_KeyCodes import *
 
 ##################### GAME VARIABLES #####################
 
 # Replace this with your Twitch username. Must be all lowercase.
-TWITCH_CHANNEL = 'dougdougw' 
+TWITCH_CHANNEL = 'USERNAME_HERE' 
 
 # If streaming on Youtube, set this to False
 STREAMING_ON_TWITCH = True
@@ -21,6 +22,9 @@ YOUTUBE_CHANNEL_ID = "YOUTUBE_CHANNEL_ID_HERE"
 # If you're using an Unlisted stream to test on Youtube, replace "None" below with your stream's URL in quotes.
 # Otherwise you can leave this as "None"
 YOUTUBE_STREAM_URL = None
+
+arduino = serial.Serial('COM3', 9600, timeout=1)
+time.sleep(2)  # Wait for Arduino to initialize
 
 ##################### MESSAGE QUEUE VARIABLES #####################
 
@@ -63,68 +67,60 @@ def handle_message(message):
     try:
         msg = message['message'].lower()
         username = message['username'].lower()
+        special_user = "USERNAME_HERE"
 
         print("Got this message from " + username + ": " + msg)
 
-        # Now that you have a chat message, this is where you add your game logic.
-        # Use the "HoldKey(KEYCODE)" function to permanently press and hold down a key.
-        # Use the "ReleaseKey(KEYCODE)" function to release a specific keyboard key.
-        # Use the "HoldAndReleaseKey(KEYCODE, SECONDS)" function press down a key for X seconds, then release it.
-        # Use the pydirectinput library to press or move the mouse
+        # Admin commands
+        if msg == "up" and username == special_user:
+            command = "up\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to have the crane to go up")
+        
+        if msg == "down" and username == special_user:
+            command = "down\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to have the crane try to go down")
+        
+        if msg == "return" and username == special_user:
+            command = "return\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to have the crane try to go down")
 
-        # I've added some example videogame logic code below:
+        # chat controlled commands
+        # If the message is exactly "grab", send it to the Arduino
+        if msg == "grab":
+            command = "grab\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to have the crane try to grab")
+            os._exit(0)
 
-        ###################################
-        # Example GTA V Code 
-        ###################################
+        # If the message is exactly "left", send it to the Arduino
+        if msg == "left":
+            command = "left\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to move crane left")
 
-        # If the chat message is "left", then hold down the A key for 2 seconds
-        if msg == "left": 
-            HoldAndReleaseKey(A, 2)
+        # If the message is exactly "right", send it to the Arduino
+        if msg == "right":
+            command = "right\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to move crane right")
 
-        # If the chat message is "right", then hold down the D key for 2 seconds
-        if msg == "right": 
-            HoldAndReleaseKey(D, 2)
+        # If the message is exactly "fwd", send it to the Arduino
+        if msg == "fwd":
+            command = "fwd\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to move crane fwd")
 
-        # If message is "drive", then permanently hold down the W key
-        if msg == "drive": 
-            ReleaseKey(S) #release brake key first
-            HoldKey(W) #start permanently driving
-
-        # If message is "reverse", then permanently hold down the S key
-        if msg == "reverse": 
-            ReleaseKey(W) #release drive key first
-            HoldKey(S) #start permanently reversing
-
-        # Release both the "drive" and "reverse" keys
-        if msg == "stop": 
-            ReleaseKey(W)
-            ReleaseKey(S)
-
-        # Press the spacebar for 0.7 seconds
-        if msg == "brake": 
-            HoldAndReleaseKey(SPACE, 0.7)
-
-        # Press the left mouse button down for 1 second, then release it
-        if msg == "shoot": 
-            pydirectinput.mouseDown(button="left")
-            time.sleep(1)
-            pydirectinput.mouseUp(button="left")
-
-        # Move the mouse up by 30 pixels
-        if msg == "aim up":
-            pydirectinput.moveRel(0, -30, relative=True)
-
-        # Move the mouse right by 200 pixels
-        if msg == "aim right":
-            pydirectinput.moveRel(200, 0, relative=True)
-
-        ####################################
-        ####################################
+        # If the message is exactly "back", send it to the Arduino
+        if msg == "back":
+            command = "back\n"  # Append newline since Arduino reads until newline
+            arduino.write(command.encode('utf-8'))
+            print("Sent command to move crane back")
 
     except Exception as e:
         print("Encountered exception: " + str(e))
-
 
 while True:
 
